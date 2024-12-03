@@ -2,11 +2,25 @@
 
 use std::fs;
 fn main() {
+    let mut instruction = true;
     let mut res = 0;
     let f = fs::read_to_string("i2").unwrap();
     let fl = f.len();
     let mut i = 0;
     'main: loop {
+        if i + 4 < fl {
+            let phrase = &f[i..i + 4];
+            if phrase == "do()" {
+                instruction = true;
+            }
+        }
+
+        if i + 7 < fl {
+            let phrase = &f[i..i + 7];
+            if phrase == "don't()" {
+                instruction = false;
+            }
+        }
         if i + 4 < fl {
             let phrase = &f[i..i + 4];
             if phrase == "mul(" {
@@ -48,7 +62,9 @@ fn main() {
 
                 let n1 = parse_str_to_number(&numbers1);
                 let n2 = parse_str_to_number(&numbers2);
-                res += n1 * n2;
+                if instruction {
+                    res += n1 * n2;
+                }
                 i += 1;
                 continue 'main;
             }
