@@ -5,7 +5,7 @@ use std::{
     fs,
 };
 fn main() {
-    let inp = fs::read_to_string("i2").unwrap();
+    let inp = fs::read_to_string("i1").unwrap();
     // let p1 = calc_part1(&inp);
     // println!("{p1}");
     let p2 = calc_part2(&inp);
@@ -93,15 +93,10 @@ fn calc_part2(inp: &str) -> usize {
             _ => {}
         }
         if path_len != 0 {
-            path_vec.pop_front();
             path_vec.push_back(path_len);
             is_at_end = true;
         }
         if path_vec.len() == 4 {
-            // println!("{:?} {:?}", path_vec, dir);
-            // if path_vec[0] >= path_vec[2] && path_vec[1] < path_vec[3] {
-            //     println!("{:?}", "DOG");
-            // }
             println!("{:?}", path_vec);
             if path_vec[0] >= path_vec[2] && path_vec[1] < path_vec[3] {
                 let a = path_vec[3] - path_vec[1];
@@ -110,61 +105,55 @@ fn calc_part2(inp: &str) -> usize {
                 match dir {
                     'n' => {
                         //last_dir W
-                        println!("N{:?} xy:{y}{x} ", path_vec[path_vec.len() - 1]);
                         if (y, x + a as usize - 1) != start_pos {
                             pos_obstacle = (y, x + a as usize - 1);
                             is_at_start = false;
                         }
-                        println!("{:?}", pos_obstacle);
                     }
                     'e' => {
                         //last_dir N
-                        println!("E{:?}", path_vec[path_vec.len() - 1]);
                         if (y + a as usize - 1, x) != start_pos {
                             pos_obstacle = (y + a as usize - 1, x);
                             is_at_start = false;
                         }
-                        println!("{:?}", pos_obstacle);
                     }
                     's' => {
                         //last_dir E
-                        println!("S");
                         if (y, x - a as usize + 1) != start_pos {
                             pos_obstacle = (y, x - a as usize + 1);
                             is_at_start = false;
                         }
-                        println!("{:?}", pos_obstacle);
                     }
                     'w' => {
                         //last_dir S
-                        println!("w");
                         if (y - a as usize + 1, x) != start_pos {
                             pos_obstacle = (y - a as usize + 1, x);
                             is_at_start = false;
                         }
-                        println!("{:?}", pos_obstacle);
                     }
                     _ => {}
                 }
                 if !is_at_start {
                     obstacle_set.insert(pos_obstacle);
                 }
-            } else if path_vec[0] < path_vec[2] && path_vec[1] <= path_vec[3] {
+            } else if path_vec[0] < path_vec[2] && path_vec[1] < path_vec[3] && !is_at_end {
                 let mut is_at_start = true;
                 let mut pos_obstacle = (0, 0);
                 match dir {
                     'n' => {
-                        let mut xx = x + 1;
+                        let mut xx = x;
                         let last = cols - path_vec[3] as usize;
                         while xx < last {
-                            let mut yy = y - 1;
+                            let mut yy = y;
                             while yy > 0 {
                                 let a = pos_set.get(&(yy, xx));
                                 if a.is_some() {
-                                    let aa = pos_set.get(&(yy - 1, xx));
-                                    if aa.is_some() {
-                                        let el = (y, xx - 1);
-                                        obstacle_set.insert(el);
+                                    if yy - 1 > 0 {
+                                        let aa = pos_set.get(&(yy - 1, xx));
+                                        if aa.is_some() {
+                                            let el = (y, xx - 1);
+                                            obstacle_set.insert(el);
+                                        }
                                     }
                                 }
                                 yy -= 1;
@@ -172,18 +161,42 @@ fn calc_part2(inp: &str) -> usize {
                             xx += 1;
                         }
                     }
-                    's' => {
-                        let mut xx = x - 1;
-                        let last = cols - path_vec[3] as usize;
-                        while xx > last {
-                            let mut yy = y + 1;
-                            while yy < rows - 1 {
+                    'e' => {
+                        let mut yy = y;
+                        let last = rows - path_vec[3] as usize;
+                        while yy < last {
+                            let mut xx = x;
+                            while xx < cols {
                                 let a = pos_set.get(&(yy, xx));
                                 if a.is_some() {
-                                    let aa = pos_set.get(&(yy + 1, xx));
-                                    if aa.is_some() {
-                                        let el = (y, xx + 1);
-                                        obstacle_set.insert(el);
+                                    if xx + 1 < cols {
+                                        let aa = pos_set.get(&(yy, xx + 1));
+                                        if aa.is_some() {
+                                            let el = (yy + 1, x);
+                                            obstacle_set.insert(el);
+                                        }
+                                    }
+                                }
+                                xx += 1;
+                            }
+                            yy += 1;
+                        }
+                    }
+                    's' => {
+                        println!("DOG");
+                        let mut xx = x;
+                        let last = cols - path_vec[3] as usize;
+                        while xx > last {
+                            let mut yy = y;
+                            while yy < rows {
+                                let a = pos_set.get(&(yy, xx));
+                                if a.is_some() {
+                                    if yy + 1 < rows {
+                                        let aa = pos_set.get(&(yy + 1, xx));
+                                        if aa.is_some() {
+                                            let el = (y, xx + 1);
+                                            obstacle_set.insert(el);
+                                        }
                                     }
                                 }
                                 yy += 1;
@@ -191,42 +204,25 @@ fn calc_part2(inp: &str) -> usize {
                             xx -= 1;
                         }
                     }
-                    'e' => {
-                        let mut yy = y - 1;
+                    'w' => {
+                        let mut yy = y;
                         let last = rows - path_vec[3] as usize;
                         while yy > last {
-                            let mut xx = x + 1;
-                            while xx < cols {
-                                let a = pos_set.get(&(xx, yy));
-                                if a.is_some() {
-                                    let aa = pos_set.get(&(yy, xx + 1));
-                                    if aa.is_some() {
-                                        let el = (yy + 1, x);
-                                        obstacle_set.insert(el);
-                                    }
-                                }
-                                xx += 1;
-                            }
-                            yy -= 1;
-                        }
-                    }
-                    'w' => {
-                        let mut yy = y + 1;
-                        let last = rows - path_vec[3] as usize;
-                        while yy < last {
-                            let mut xx = x - 1;
+                            let mut xx = x;
                             while xx > 0 {
-                                let a = pos_set.get(&(xx, yy));
+                                let a = pos_set.get(&(yy, xx));
                                 if a.is_some() {
-                                    let aa = pos_set.get(&(yy, xx - 1));
-                                    if aa.is_some() {
-                                        let el = (yy - 1, x);
-                                        obstacle_set.insert(el);
+                                    if xx + 1 > 0 {
+                                        let aa = pos_set.get(&(yy, xx - 1));
+                                        if aa.is_some() {
+                                            let el = (yy - 1, x);
+                                            obstacle_set.insert(el);
+                                        }
                                     }
                                 }
                                 xx -= 1;
                             }
-                            yy += 1;
+                            yy -= 1;
                         }
                     }
                     _ => {}
@@ -234,14 +230,104 @@ fn calc_part2(inp: &str) -> usize {
                 if !is_at_start {
                     obstacle_set.insert(pos_obstacle);
                 }
+            } else if path_vec[0] < path_vec[2] && path_vec[1] < path_vec[3] && is_at_end {
+                let mut is_at_start = true;
+                let mut pos_obstacle = (0, 0);
+                match dir {
+                    'n' => {
+                        let mut xx = x;
+                        let last = cols - path_vec[3] as usize;
+                        while xx < last {
+                            let mut yy = y;
+                            while yy > 0 {
+                                let a = pos_set.get(&(yy, xx));
+                                if a.is_some() {
+                                    if yy - 1 > 0 {
+                                        let aa = pos_set.get(&(yy - 1, xx));
+                                        if aa.is_some() {
+                                            let el = (y, xx - 1);
+                                            obstacle_set.insert(el);
+                                        }
+                                    }
+                                }
+                                yy -= 1;
+                            }
+                            xx += 1;
+                        }
+                    }
+                    'e' => {
+                        let mut yy = y;
+                        let last = rows - path_vec[3] as usize;
+                        while yy < last {
+                            let mut xx = x;
+                            while xx < cols {
+                                let a = pos_set.get(&(yy, xx));
+                                if a.is_some() {
+                                    if xx + 1 < cols {
+                                        let aa = pos_set.get(&(yy, xx + 1));
+                                        if aa.is_some() {
+                                            let el = (yy + 1, x);
+                                            obstacle_set.insert(el);
+                                        }
+                                    }
+                                }
+                                xx += 1;
+                            }
+                            yy += 1;
+                        }
+                    }
+                    's' => {
+                        println!("DOG");
+                        let mut xx = x;
+                        let last = cols - path_vec[3] as usize;
+                        while xx > last {
+                            let mut yy = y;
+                            while yy < rows {
+                                let a = pos_set.get(&(yy, xx));
+                                if a.is_some() {
+                                    if yy - 1 < rows {
+                                        let aa = pos_set.get(&(yy - 1, xx));
+                                        if aa.is_some() {
+                                            let el = (y, xx + 1);
+                                            obstacle_set.insert(el);
+                                        }
+                                    }
+                                }
+                                yy += 1;
+                            }
+                            xx -= 1;
+                        }
+                    }
+                    'w' => {
+                        let mut yy = y;
+                        let last = rows - path_vec[3] as usize;
+                        while yy > last {
+                            let mut xx = x;
+                            while xx > 0 {
+                                let a = pos_set.get(&(yy, xx));
+                                if a.is_some() {
+                                    if xx + 1 > 0 {
+                                        let aa = pos_set.get(&(yy, xx - 1));
+                                        if aa.is_some() {
+                                            let el = (yy - 1, x);
+                                            obstacle_set.insert(el);
+                                        }
+                                    }
+                                }
+                                xx -= 1;
+                            }
+                            yy -= 1;
+                        }
+                    }
+                    _ => {}
+                }
             }
-            println!("{:?}", path_vec.len());
         }
         if is_at_end {
             break;
         }
-        println!("{:?}", obstacle_set);
     }
+    println!("{:?}", obstacle_set);
     obstacle_set.len()
 }
 fn calc_part1(inp: &str) -> usize {
