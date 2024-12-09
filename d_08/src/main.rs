@@ -38,11 +38,6 @@ fn calc_part2(inp: &str) -> u64 {
                     potent_y -= dist_y;
                     potent_x -= dist_x;
                 }
-                // if potent_y >= 0 && potent_y < height as i32 {
-                //     if potent_x >= 0 && potent_x < width as i32 {
-                //         res.insert((potent_y as usize, potent_x as usize));
-                //     }
-                // }
             }
         }
     }
