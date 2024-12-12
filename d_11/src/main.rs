@@ -1,11 +1,11 @@
 #![allow(dead_code, unused, clippy::all)]
-use std::fs;
+use std::{collections::HashMap, fs};
 fn main() {
     let inp = fs::read_to_string("i2").unwrap();
     let p1 = calc_p1(&inp);
     println!("part1: {p1}");
-    // let p2 = calc_p2(&inp);
-    // println!("part2: {p2}");
+    let p2 = calc_p2(&inp);
+    println!("part2: {p2}");
 }
 fn calc_p1(inp: &str) -> usize {
     let mut res = 0;
@@ -22,7 +22,43 @@ fn calc_p1(inp: &str) -> usize {
 fn calc_p2(inp: &str) -> usize {
     let mut res = 0;
     let mut stones = parse_input(inp);
+    let mut map: HashMap<(u64, usize), usize> = HashMap::new();
+    for stone in stones {
+        res += blink_rec(stone, 75, &mut map);
+    }
     res
+}
+fn blink_rec(stone: u64, blink_count: usize, map: &mut HashMap<(u64, usize), usize>) -> usize {
+    if blink_count == 1 {
+        let stone_str = stone.to_string();
+        if stone_str.len() % 2 == 0 {
+            return 2;
+        }
+        return 1;
+    }
+    let r = map.get(&(stone, blink_count));
+    if let Some(&n) = r {
+        return n;
+    }
+    if stone == 0 {
+        let r = blink_rec(1, blink_count - 1, map);
+        map.insert((0, blink_count), r);
+        return r;
+    }
+    let stone_str = stone.to_string();
+    if stone_str.len() % 2 == 0 {
+        let (l, r) = stone_str.split_at(stone_str.len() / 2);
+        let l = parse_str_to_number(l);
+        let r = parse_str_to_number(r);
+        let lr = blink_rec(l, blink_count - 1, map);
+        map.insert((l, blink_count - 1), lr);
+        let rr = blink_rec(r, blink_count - 1, map);
+        map.insert((r, blink_count - 1), rr);
+        return lr + rr;
+    }
+    let r = blink_rec(stone * 2024, blink_count - 1, map);
+    map.insert((stone, blink_count), r);
+    return r;
 }
 fn blink(stone: u64) -> Vec<u64> {
     if stone == 0 {
